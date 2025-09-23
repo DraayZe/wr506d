@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+
+
 use App\Repository\ActorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,6 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ActorRepository::class)]
 #[ApiResource]
+
+#[ORM\HasLifecycleCallbacks]
 class Actor
 {
     #[ORM\Id]
@@ -156,10 +160,10 @@ class Actor
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): void
     {
-        $this->createdAt = $createdAt;
+        $this->createdAt = new \DateTime();
 
-        return $this;
     }
 }
