@@ -63,6 +63,18 @@ class Movie
     #[ORM\ManyToMany(targetEntity: Actor::class, mappedBy: 'movies')]
     private Collection $actors;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $nbEntries = null;
+
+    #[ORM\ManyToOne(inversedBy: 'movies')]
+    private ?Director $director = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $url = null;
+
+    #[ORM\Column]
+    private ?float $budget = null;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
@@ -197,6 +209,54 @@ class Movie
         if ($this->actors->removeElement($actor)) {
             $actor->removeMovie($this);
         }
+
+        return $this;
+    }
+
+    public function getNbEntries(): ?int
+    {
+        return $this->nbEntries;
+    }
+
+    public function setNbEntries(?int $nbEntries): static
+    {
+        $this->nbEntries = $nbEntries;
+
+        return $this;
+    }
+
+    public function getDirector(): ?Director
+    {
+        return $this->director;
+    }
+
+    public function setDirector(?Director $director): static
+    {
+        $this->director = $director;
+
+        return $this;
+    }
+
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(string $url): static
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    public function getBudget(): ?float
+    {
+        return $this->budget;
+    }
+
+    public function setBudget(float $budget): static
+    {
+        $this->budget = $budget;
 
         return $this;
     }
