@@ -12,9 +12,7 @@ class MeController
     public function getCurrentUser(UserInterface $user): JsonResponse
     {
         $userData = [
-            'email' => $user->getEmail(),
-            'firstname' => $user->getFirstname()
-            // etc....
+            'email' => $user->getEmail()
         ];
 
         return new JsonResponse($userData);
