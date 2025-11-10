@@ -43,9 +43,6 @@ class Actor
     #[ORM\Column(type: Types::TEXT)]
     private ?string $bio = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $photo = null;
-
     /**
      * @var Collection<int, Movie>
      */
@@ -54,6 +51,13 @@ class Actor
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $createdAt = null;
+
+    #[ORM\ManyToOne(inversedBy: 'actors')]
+    private ?MediaObject $photo = null;
+
+    /**
+     * @var Collection<int, MediaObject>
+     */
 
     public function __construct()
     {
@@ -125,18 +129,6 @@ class Actor
         return $this;
     }
 
-    public function getPhoto(): ?string
-    {
-        return $this->photo;
-    }
-
-    public function setPhoto(?string $photo): static
-    {
-        $this->photo = $photo;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, Movie>
      */
@@ -171,5 +163,21 @@ class Actor
     {
         $this->createdAt = new \DateTime();
 
+    }
+
+    /**
+     * @return Collection<int, MediaObject>
+     */
+
+    public function getPhoto(): ?MediaObject
+    {
+        return $this->photo;
+    }
+
+    public function setPhoto(?MediaObject $photo): static
+    {
+        $this->photo = $photo;
+
+        return $this;
     }
 }

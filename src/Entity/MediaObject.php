@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -63,8 +65,50 @@ class MediaObject
     #[ORM\Column(nullable: true)]
     public ?string $filePath = null;
 
+    /**
+     * @var Collection<int, Actor>
+     */
+    #[ORM\OneToMany(targetEntity: Actor::class, mappedBy: 'photo')]
+    private Collection $actors;
+
+    public function __construct()
+    {
+        $this->actors = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
     }
+
+    /**
+     * @return Collection<int, Actor>
+     */
+    public function getActors(): Collection
+    {
+        return $this->actors;
+    }
+
+    public function addActor(Actor $actor): static
+    {
+        if (!$this->actors->contains($actor)) {
+            $this->actors->add($actor);
+            $actor->setPhoto($this);
+        }
+
+        return $this;
+    }
+
+    public function removeActor(Actor $actor): static
+    {
+        if ($this->actors->removeElement($actor)) {
+            // set the owning side to null (unless already changed)
+            if ($actor->getPhoto() === $this) {
+                $actor->setPhoto(null);
+            }
+        }
+
+        return $this;
+    }
+
 }
