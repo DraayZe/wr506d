@@ -14,7 +14,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use DateTimeImmutable;
 
-
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 #[ApiResource]
 #[ApiFilter(SearchFilter::class, properties: ['name' => 'start'])]
