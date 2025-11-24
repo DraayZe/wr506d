@@ -19,7 +19,9 @@ class ProductController extends AbstractController
             'slug' => $slug,
         ]);
     }
-
+    /**
+     * @SuppressWarnings(PHPMD.ShortVariable)
+     */
     #[Route('/product/{id}', name: 'viewProduct')]
     public function viewProduct(int $id): Response
     {

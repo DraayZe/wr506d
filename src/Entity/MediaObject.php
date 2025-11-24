@@ -48,6 +48,9 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
         )
     ]
 )]
+/**
+ * @SuppressWarnings(PHPMD.ShortVariable)
+ */
 class MediaObject
 {
     #[ORM\Id, ORM\Column, ORM\GeneratedValue]

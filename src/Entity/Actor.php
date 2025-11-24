@@ -21,6 +21,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource]
 
 #[ORM\HasLifecycleCallbacks]
+/**
+ * @SuppressWarnings(PHPMD.ShortVariable)
+ */
 class Actor
 {
     #[ORM\Id]
