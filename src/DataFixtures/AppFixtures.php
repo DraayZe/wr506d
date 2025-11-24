@@ -7,15 +7,32 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use App\Entity\Actor;
 use App\Entity\Movie;
+use Faker\Factory;
+use Faker\Generator;
+use Xylis\FakerCinema\Provider\Person;
+use Xylis\FakerCinema\Provider\Movie as MovieProvider;
 
 class AppFixtures extends Fixture
 {
+    private Generator $faker;
+    private Generator $fakerMovie;
+
+    /**
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     */
+    public function __construct()
+    {
+        $this->faker = Factory::create();
+        $this->faker->addProvider(new Person($this->faker));
+
+        $this->fakerMovie = Factory::create();
+        $this->fakerMovie->addProvider(new MovieProvider($this->fakerMovie));
+    }
+
     public function load(ObjectManager $manager): void
     {
-        $faker = \Faker\Factory::create();
-        $faker->addProvider(new \Xylis\FakerCinema\Provider\Person($faker));
-
-        $actors = $faker->actors($gender = null, $count = 190, $duplicates = false);
+        $actorsArray = [];
+        $actors = $this->faker->actors($gender = null, $count = 190, $duplicates = false);
         foreach ($actors as $item) {
             $actor = new Actor();
             $fullname = $item;
@@ -24,50 +41,45 @@ class AppFixtures extends Fixture
             $actor->setFirstName($names[0] ?? '');
             $actor->setLastName($names[1] ?? '');
 
-            $actor->setBio($faker->paragraph(6, true));
-            $dob = $faker->dateTimeThisCentury();
+            $actor->setBio($this->faker->paragraph(6, true));
+            $dob = $this->faker->dateTimeThisCentury();
             $actor->setDob($dob);
 
-            if ($faker->boolean(90)) {
+            if ($this->faker->boolean(90)) {
                 $actor->setDod(
-                    $faker->dateTimeBetween($dob, 'now')
+                    $this->faker->dateTimeBetween($dob, 'now')
                 );
             }
             $actorsArray[] = $actor;
             $manager->persist($actor);
         }
 
-
-        $fakerMovie = \Faker\Factory::create();
-        $fakerMovie->addProvider(new \Xylis\FakerCinema\Provider\Movie($fakerMovie));
-
         $categoriesArray = [];
-        $movies = $fakerMovie->movies(199);
+        $movies = $this->fakerMovie->movies(199);
 
         foreach ($movies as $item) {
             $movie = new Movie();
 
             $movie->setName($item);
-            $movie->setDescription($fakerMovie->overview);
+            $movie->setDescription($this->fakerMovie->overview);
 
+            $durationMin = 60 * 60;
+            $durationMax = 270 * 60;
+            $movie->setDuration($this->fakerMovie->numberBetween($durationMin, $durationMax));
 
-            $durationMin = 60 * 60;   // 1h
-            $durationMax = 270 * 60;  // 4h30
-            $movie->setDuration($fakerMovie->numberBetween($durationMin, $durationMax));
-
-            $categoryName = $fakerMovie->movieGenre;
+            $categoryName = $this->fakerMovie->movieGenre;
             if (!array_key_exists($categoryName, $categoriesArray)) {
                 $category = new Category();
                 $category->setName($categoryName);
                 $manager->persist($category);
                 $categoriesArray[$categoryName] = $category;
-            } else {
-                $category = $categoriesArray[$categoryName];
             }
 
+            $category = $categoriesArray[$categoryName];
+
             shuffle($actorsArray);
-            foreach (array_slice($actorsArray, 0, rand(2, 6)) as $ActorObject) {
-                $movie->addActor($ActorObject);
+            foreach (array_slice($actorsArray, 0, rand(2, 6)) as $actorObject) {
+                $movie->addActor($actorObject);
             }
             $movie->addCategory($category);
             $manager->persist($movie);
