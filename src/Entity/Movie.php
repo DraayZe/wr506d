@@ -19,6 +19,9 @@ use DateTimeImmutable;
 #[ApiFilter(SearchFilter::class, properties: ['name' => 'start'])]
 #[ApiFilter(RangeFilter::class, properties: ['duration'])]
 #[ORM\HasLifecycleCallbacks]
+/**
+ * @SuppressWarnings(PHPMD.ShortVariable)
+ */
 class Movie
 {
     #[ORM\Id]

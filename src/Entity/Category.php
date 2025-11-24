@@ -12,6 +12,9 @@ use DateTimeImmutable;
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ApiResource]
 #[ORM\HasLifecycleCallbacks]
+/**
+ * @SuppressWarnings(PHPMD.ShortVariable)
+ */
 class Category
 {
     #[ORM\Id]

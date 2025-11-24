@@ -10,6 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DirectorRepository::class)]
 #[ApiResource]
+/**
+ * @SuppressWarnings(PHPMD.ShortVariable)
+ */
 class Director
 {
     #[ORM\Id]
