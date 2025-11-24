@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use DateTimeImmutable;
 
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
@@ -155,8 +156,7 @@ class Movie
     #[ORM\PrePersist]
     public function setCreatedAt(): void
     {
-            $this->createdAt = new \DateTimeImmutable();
-
+        $this->createdAt = new DateTimeImmutable();
     }
 
     /**
