@@ -13,7 +13,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 #[ApiResource]
 #[ApiFilter(SearchFilter::class, properties: ['name' => 'start'])]
@@ -156,7 +155,6 @@ class Movie
     public function setCreatedAt(): void
     {
             $this->createdAt = new \DateTimeImmutable();
-
     }
 
     /**

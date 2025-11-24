@@ -85,6 +85,5 @@ class Category
     public function setCreatedAt(): void
     {
         $this->createdAt = new \DateTimeImmutable();
-
     }
 }

@@ -162,7 +162,6 @@ class Actor
     public function setCreatedAt(): void
     {
         $this->createdAt = new \DateTime();
-
     }
 
     /**
