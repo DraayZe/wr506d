@@ -3,7 +3,7 @@ framework:
         anonymous_api:
             # use 'sliding_window' if you prefer that policy
             policy: 'fixed_window'
-            limit: 30
+            limit: 5
             interval: '1 minute'
         authenticated_api:
             policy: 'token_bucket'
