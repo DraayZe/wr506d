@@ -26,3 +26,4 @@ services:
         arguments:
             $anonApiLimiter: '@limiter.anonymous_api'
             $rateLimiterStorage: '@limiter.storage.anonymous_api'
+
