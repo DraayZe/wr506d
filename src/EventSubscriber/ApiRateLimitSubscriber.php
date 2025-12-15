@@ -106,7 +106,7 @@ final class ApiRateLimitSubscriber implements EventSubscriberInterface
         };
 
         $interval = new DateInterval(self::ONE_MINUTE_INTERVAL);
-        $rate = new Rate($userLimit, $interval);
+        $rate = new Rate($interval, $userLimit);  // DateInterval d'abord, puis int
 
         return new TokenBucketLimiter(
             id: 'user_' . $identifier,
