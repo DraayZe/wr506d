@@ -11,6 +11,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Validator\Constraints as Assert;
+use DateTimeImmutable;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
@@ -57,6 +59,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'integer', options: ['default' => 100])]
     private int $limiter = 100;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    #[Assert\Length(exactly: 64)]
+    private ?string $apiKeyHash = null;
+
+    #[ORM\Column(length: 16, nullable: true)]
+    #[Assert\Length(exactly: 16)]
+    private ?string $apiKeyPrefix = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $apiKeyEnabled = false;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $apiKeyCreatedAt = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $apiKeyLastUsedAt = null;
 
     public function getId(): ?int
     {
@@ -160,5 +179,69 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->limiter = $limiter;
 
         return $this;
+    }
+
+    public function getApiKeyHash(): ?string
+    {
+        return $this->apiKeyHash;
+    }
+
+    public function setApiKeyHash(?string $apiKeyHash): static
+    {
+        $this->apiKeyHash = $apiKeyHash;
+
+        return $this;
+    }
+
+    public function getApiKeyPrefix(): ?string
+    {
+        return $this->apiKeyPrefix;
+    }
+
+    public function setApiKeyPrefix(?string $apiKeyPrefix): static
+    {
+        $this->apiKeyPrefix = $apiKeyPrefix;
+
+        return $this;
+    }
+
+    public function isApiKeyEnabled(): ?bool
+    {
+        return $this->apiKeyEnabled;
+    }
+
+    public function setApiKeyEnabled(bool $apiKeyEnabled): static
+    {
+        $this->apiKeyEnabled = $apiKeyEnabled;
+
+        return $this;
+    }
+
+    public function getApiKeyCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->apiKeyCreatedAt;
+    }
+
+    public function setApiKeyCreatedAt(?\DateTimeImmutable $apiKeyCreatedAt): static
+    {
+        $this->apiKeyCreatedAt = $apiKeyCreatedAt;
+
+        return $this;
+    }
+
+    public function getApiKeyLastUsedAt(): ?\DateTimeImmutable
+    {
+        return $this->apiKeyLastUsedAt;
+    }
+
+    public function setApiKeyLastUsedAt(?\DateTimeImmutable $apiKeyLastUsedAt): static
+    {
+        $this->apiKeyLastUsedAt = $apiKeyLastUsedAt;
+
+        return $this;
+    }
+    public function updateApiKeyLastUsedAt(): void
+    {
+        $this->apiKeyLastUsedAt = new DateTimeImmutable();
     }
 }
