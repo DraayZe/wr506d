@@ -25,4 +25,4 @@ services:
     App\EventSubscriber\ApiRateLimitSubscriber:
         arguments:
             $anonApiLimiter: '@limiter.anonymous_api'
-            $authApiLimiter: '@limiter.authenticated_api'
+            $rateLimiterStorage: '@limiter.storage.anonymous_api'

@@ -55,6 +55,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:write'])]
     private ?string $plainPassword = null;
 
+    #[ORM\Column(type: 'integer', options: ['default' => 100])]
+    private int $limiter = 100;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -145,5 +148,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void
     {
         $this->plainPassword = null;
+    }
+
+    public function getLimiter(): ?int
+    {
+        return $this->limiter;
+    }
+
+    public function setLimiter(int $limiter): static
+    {
+        $this->limiter = $limiter;
+
+        return $this;
     }
 }
