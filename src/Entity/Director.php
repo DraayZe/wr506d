@@ -7,9 +7,13 @@ use App\Repository\DirectorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: DirectorRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['director:read']],
+    denormalizationContext: ['groups' => ['director:write']]
+)]
 /**
  * @SuppressWarnings(PHPMD.ShortVariable)
  */
@@ -18,24 +22,30 @@ class Director
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['director:read', 'movie:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['director:read', 'director:write', 'movie:read'])]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['director:read', 'director:write', 'movie:read'])]
     private ?string $firstname = null;
 
     #[ORM\Column]
+    #[Groups(['director:read', 'director:write', 'movie:read'])]
     private ?\DateTime $dob = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['director:read', 'director:write', 'movie:read'])]
     private ?\DateTime $dod = null;
 
     /**
      * @var Collection<int, Movie>
      */
     #[ORM\OneToMany(targetEntity: Movie::class, mappedBy: 'director')]
+    #[Groups(['director:read'])]
     private Collection $movies;
 
     public function __construct()

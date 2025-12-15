@@ -14,8 +14,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 final class ApiRateLimitSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly RateLimiterFactory $anonymousApiLimiter,
-        private readonly RateLimiterFactory $authenticatedApiLimiter,
+        private readonly RateLimiterFactory $anonApiLimiter,
+        private readonly RateLimiterFactory $authApiLimiter,
         private readonly TokenStorageInterface $tokenStorage
     ) {
     }
@@ -56,8 +56,8 @@ final class ApiRateLimitSubscriber implements EventSubscriberInterface
 
         // Select appropriate rate limiter
         $limiter = $isAuthenticated
-            ? $this->authenticatedApiLimiter->create($identifier)
-            : $this->anonymousApiLimiter->create($identifier);
+            ? $this->authApiLimiter->create($identifier)
+            : $this->anonApiLimiter->create($identifier);
 
         // Consume a token from the rate limiter
         $limit = $limiter->consume();
