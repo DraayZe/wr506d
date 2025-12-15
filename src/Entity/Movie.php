@@ -11,11 +11,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use DateTimeImmutable;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['movie:read']],
+    denormalizationContext: ['groups' => ['movie:write']]
+)]
 #[ApiFilter(SearchFilter::class, properties: ['name' => 'start'])]
 #[ApiFilter(RangeFilter::class, properties: ['duration'])]
 #[ORM\HasLifecycleCallbacks]
@@ -27,13 +31,16 @@ class Movie
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['movie:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
+    #[Groups(['movie:read', 'movie:write'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['movie:read', 'movie:write'])]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
@@ -43,39 +50,49 @@ class Movie
         minMessage: 'Le film doit durée au minimum {{ limit }} minutes',
         maxMessage: 'Le film ne doit pas durée au maximum {{ limit }} minutes',
     )]
+    #[Groups(['movie:read', 'movie:write'])]
     private ?int $duration = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['movie:read', 'movie:write'])]
     private ?\DateTime $releaseData = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['movie:read', 'movie:write'])]
     private ?string $image = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Groups(['movie:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     /**
      * @var Collection<int, Category>
      */
     #[ORM\ManyToMany(targetEntity: Category::class, mappedBy: 'movies')]
+    #[Groups(['movie:read'])]
     private Collection $categories;
 
     /**
      * @var Collection<int, Actor>
      */
     #[ORM\ManyToMany(targetEntity: Actor::class, mappedBy: 'movies')]
+    #[Groups(['movie:read'])]
     private Collection $actors;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['movie:read', 'movie:write'])]
     private ?int $nbEntries = null;
 
     #[ORM\ManyToOne(inversedBy: 'movies')]
+    #[Groups(['movie:read'])]
     private ?Director $director = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['movie:read', 'movie:write'])]
     private ?string $url = null;
 
     #[ORM\Column]
+    #[Groups(['movie:read', 'movie:write'])]
     private ?float $budget = null;
 
     public function __construct()

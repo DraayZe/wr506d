@@ -7,10 +7,14 @@ use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use DateTimeImmutable;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['category:read']],
+    denormalizationContext: ['groups' => ['category:write']]
+)]
 #[ORM\HasLifecycleCallbacks]
 /**
  * @SuppressWarnings(PHPMD.ShortVariable)
@@ -20,18 +24,22 @@ class Category
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['category:read', 'movie:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['category:read', 'category:write', 'movie:read'])]
     private ?string $name = null;
 
     /**
      * @var Collection<int, Movie>
      */
     #[ORM\ManyToMany(targetEntity: Movie::class, inversedBy: 'categories')]
+    #[Groups(['category:read'])]
     private Collection $movies;
 
     #[ORM\Column]
+    #[Groups(['category:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()

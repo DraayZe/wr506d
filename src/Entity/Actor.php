@@ -13,12 +13,16 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ActorRepository::class)]
 #[ApiFilter(SearchFilter::class, properties: ['lastname' => 'start', 'firstname' => 'start'])]
 #[ApiFilter(DateFilter::class, properties: ['dob'])]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['actor:read']],
+    denormalizationContext: ['groups' => ['actor:write']]
+)]
 
 #[ORM\HasLifecycleCallbacks]
 /**
@@ -29,33 +33,42 @@ class Actor
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['actor:read', 'movie:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['actor:read', 'actor:write', 'movie:read'])]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['actor:read', 'actor:write', 'movie:read'])]
     private ?string $firstname = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['actor:read', 'actor:write', 'movie:read'])]
     private ?\DateTime $dob = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['actor:read', 'actor:write', 'movie:read'])]
     private ?\DateTime $dod = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['actor:read', 'actor:write', 'movie:read'])]
     private ?string $bio = null;
 
     /**
      * @var Collection<int, Movie>
      */
     #[ORM\ManyToMany(targetEntity: Movie::class, inversedBy: 'actors')]
+    #[Groups(['actor:read'])]
     private Collection $movies;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['actor:read'])]
     private ?\DateTime $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'actors')]
+    #[Groups(['actor:read', 'movie:read'])]
     private ?MediaObject $photo = null;
 
     /**
