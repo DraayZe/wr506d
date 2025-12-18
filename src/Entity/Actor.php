@@ -46,15 +46,16 @@ class Actor
     #[Groups(['actor:read', 'actor:write', 'movie:read'])]
     private ?string $firstname = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Groups(['actor:read', 'actor:write', 'movie:read'])]
     #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     private ?\DateTimeImmutable $dob = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Groups(['actor:read', 'actor:write', 'movie:read'])]
     #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     private ?\DateTimeImmutable $dod = null;
+
     #[ORM\Column(type: Types::TEXT)]
     #[Groups(['actor:read', 'actor:write', 'movie:read'])]
     private ?string $bio = null;
@@ -66,7 +67,7 @@ class Actor
     #[Groups(['actor:read'])]
     private Collection $movies;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     #[Groups(['actor:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -118,9 +119,9 @@ class Actor
     }
 
 
-    public function setDob(?\DateTime $dob): static
+    public function setDob(?\DateTimeImmutable $dob): static
     {
-        $this->dob = $dob ? \DateTimeImmutable::createFromMutable($dob) : null;
+        $this->dob = $dob;
         return $this;
     }
 
@@ -129,9 +130,9 @@ class Actor
         return $this->dod;
     }
 
-    public function setDod(?\DateTime $dod): static
+    public function setDod(?\DateTimeImmutable $dod): static
     {
-        $this->dod = $dod ? \DateTimeImmutable::createFromMutable($dod) : null;
+        $this->dod = $dod;
         return $this;
     }
 
