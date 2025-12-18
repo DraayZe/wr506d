@@ -57,23 +57,81 @@ class TwoFactorService
     {
         $provisioningUri = $this->getProvisioningUri($user);
 
-        // Génération du QR code
         $qrCode = new QrCode($provisioningUri);
         $writer = new PngWriter();
         $result = $writer->write($qrCode);
 
         return 'data:image/png;base64,' . base64_encode($result->getString());
     }
-
     /**
-     * Verify TOTP code
+     * Verify TOTP code with time window tolerance
      */
     public function verifyCode(User $user, string $code): bool
     {
-        if (!$user->getTwoFactorSecret()) {
+        $secret = $user->getTwoFactorSecret();
+        if (!$secret) {
             return false;
         }
 
-        return $this->getTOTP($user)->verify($code);
+        $totp = TOTP::createFromSecret($secret);
+        $totp->setIssuer($this->issuer);
+
+        // Vérifie le code avec une fenêtre de ±1 (tolérance de 30 sec avant/après)
+        return $totp->verify($code, null, 1);
+    }
+
+    /**
+     * Generate backup codes
+     * @return list<string>
+     */
+    public function generateBackupCodes(int $count = 8): array
+    {
+        $codes = [];
+        for ($i = 0; $i < $count; $i++) {
+            // Generate 8-character alphanumeric codes
+            $codes[] = strtoupper(substr(bin2hex(random_bytes(4)), 0, 8));
+        }
+        return $codes;
+    }
+
+    /**
+     * Hash backup codes for storage
+     * @param list<string> $codes
+     * @return list<string>
+     */
+    public function hashBackupCodes(array $codes): array
+    {
+        return array_map(fn($code) => hash('sha256', $code), $codes);
+    }
+
+    /**
+     * Verify backup code
+     */
+    public function verifyBackupCode(User $user, string $code): bool
+    {
+        $hashedCode = hash('sha256', $code);
+        $backupCodes = $user->getTwoFactorBackupCodes();
+
+        if ($backupCodes === null) {
+            return false;
+        }
+
+        return in_array($hashedCode, $backupCodes, true);
+    }
+
+    /**
+     * Remove used backup code
+     */
+    public function removeBackupCode(User $user, string $code): void
+    {
+        $hashedCode = hash('sha256', $code);
+        $backupCodes = $user->getTwoFactorBackupCodes();
+
+        if ($backupCodes === null) {
+            return;
+        }
+
+        $filtered = array_filter($backupCodes, fn($bc) => $bc !== $hashedCode);
+        $user->setTwoFactorBackupCodes(array_values($filtered));
     }
 }

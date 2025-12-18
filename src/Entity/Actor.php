@@ -6,7 +6,9 @@ use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use DateTime;
+use DateTimeImmutable;
+use Symfony\Component\Serializer\Annotation\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 use App\Repository\ActorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -46,12 +48,13 @@ class Actor
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     #[Groups(['actor:read', 'actor:write', 'movie:read'])]
-    private ?\DateTime $dob = null;
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
+    private ?\DateTimeImmutable $dob = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     #[Groups(['actor:read', 'actor:write', 'movie:read'])]
-    private ?\DateTime $dod = null;
-
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
+    private ?\DateTimeImmutable $dod = null;
     #[ORM\Column(type: Types::TEXT)]
     #[Groups(['actor:read', 'actor:write', 'movie:read'])]
     private ?string $bio = null;
@@ -65,7 +68,7 @@ class Actor
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Groups(['actor:read'])]
-    private ?\DateTime $createdAt = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'actors')]
     #[Groups(['actor:read', 'movie:read'])]
@@ -109,27 +112,26 @@ class Actor
         return $this;
     }
 
-    public function getDob(): ?\DateTime
+    public function getDob(): ?\DateTimeImmutable
     {
         return $this->dob;
     }
 
+
     public function setDob(?\DateTime $dob): static
     {
-        $this->dob = $dob;
-
+        $this->dob = $dob ? \DateTimeImmutable::createFromMutable($dob) : null;
         return $this;
     }
 
-    public function getDod(): ?\DateTime
+    public function getDod(): ?\DateTimeImmutable
     {
         return $this->dod;
     }
 
     public function setDod(?\DateTime $dod): static
     {
-        $this->dod = $dod;
-
+        $this->dod = $dod ? \DateTimeImmutable::createFromMutable($dod) : null;
         return $this;
     }
 
@@ -169,7 +171,7 @@ class Actor
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
@@ -177,7 +179,7 @@ class Actor
     #[ORM\PrePersist]
     public function setCreatedAt(): void
     {
-        $this->createdAt = new DateTime();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     /**

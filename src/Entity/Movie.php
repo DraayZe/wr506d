@@ -44,11 +44,10 @@ class Movie
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
-    #[Assert\Length(
+    #[Assert\Range(
         min: 30,
         max: 400,
-        minMessage: 'Le film doit durée au minimum {{ limit }} minutes',
-        maxMessage: 'Le film ne doit pas durée au maximum {{ limit }} minutes',
+        notInRangeMessage: 'La durée doit être entre {{ min }} et {{ max }} minutes',
     )]
     #[Groups(['movie:read', 'movie:write'])]
     private ?int $duration = null;
