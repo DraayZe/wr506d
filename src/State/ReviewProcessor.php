@@ -10,7 +10,6 @@ use App\Entity\Review;
 use LogicException;
 use Symfony\Bundle\SecurityBundle\Security;
 
-
 class ReviewProcessor implements ProcessorInterface
 {
     public function __construct(

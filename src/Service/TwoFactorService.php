@@ -8,7 +8,6 @@ use Endroid\QrCode\Writer\PngWriter;
 use OTPHP\TOTP;
 use RuntimeException;
 
-
 class TwoFactorService
 {
     private string $issuer;
