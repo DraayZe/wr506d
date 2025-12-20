@@ -3,16 +3,33 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\DirectorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Context;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 #[ORM\Entity(repositoryClass: DirectorRepository::class)]
 #[ApiResource(
     normalizationContext: ['groups' => ['director:read']],
-    denormalizationContext: ['groups' => ['director:write']]
+    denormalizationContext: ['groups' => ['director:write']],
+    operations: [
+    new GetCollection(),
+    new Get(),
+    new Post(),
+    new Put(),
+    new Delete(
+        normalizationContext: ['groups' => ['director:delete']]
+    )
+    ]
 )]
 /**
  * @SuppressWarnings(PHPMD.ShortVariable)
@@ -22,7 +39,7 @@ class Director
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['director:read', 'movie:read'])]
+    #[Groups(['director:read', 'movie:read', 'director:delete'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -33,13 +50,15 @@ class Director
     #[Groups(['director:read', 'director:write', 'movie:read'])]
     private ?string $firstname = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Groups(['director:read', 'director:write', 'movie:read'])]
-    private ?\DateTime $dob = null;
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
+    private ?\DateTimeImmutable $dob = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Groups(['director:read', 'director:write', 'movie:read'])]
-    private ?\DateTime $dod = null;
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
+    private ?\DateTimeImmutable $dod = null;
 
     /**
      * @var Collection<int, Movie>
@@ -82,27 +101,25 @@ class Director
         return $this;
     }
 
-    public function getDob(): ?\DateTime
+    public function getDob(): ?\DateTimeImmutable
     {
         return $this->dob;
     }
 
-    public function setDob(\DateTime $dob): static
+    public function setDob(?\DateTimeImmutable $dob): static
     {
         $this->dob = $dob;
-
         return $this;
     }
 
-    public function getDod(): ?\DateTime
+    public function getDod(): ?\DateTimeImmutable
     {
         return $this->dod;
     }
 
-    public function setDod(?\DateTime $dod): static
+    public function setDod(?\DateTimeImmutable $dod): static
     {
         $this->dod = $dod;
-
         return $this;
     }
 

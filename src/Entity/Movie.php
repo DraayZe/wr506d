@@ -14,11 +14,26 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use DateTimeImmutable;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 #[ApiResource(
-    normalizationContext: ['groups' => ['movie:read']],
-    denormalizationContext: ['groups' => ['movie:write']]
+    normalizationContext: ['groups' => ['movie:read'], 'enable_max_depth' => true],
+    denormalizationContext: ['groups' => ['movie:write']],
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Post(),
+        new Put(),
+        new Delete(
+            normalizationContext: ['groups' => ['movie:delete']]
+        )
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: ['name' => 'start'])]
 #[ApiFilter(RangeFilter::class, properties: ['duration'])]
@@ -31,25 +46,20 @@ class Movie
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['movie:read'])]
+    #[Groups(['movie:read', 'movie:delete'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
-    #[Groups(['movie:read', 'movie:write'])]
+    #[Groups(['movie:read', 'movie:write','review:read','movie:delete'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['movie:read', 'movie:write'])]
+    #[Groups(['movie:read', 'movie:write', 'review:read'])]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
-    #[Assert\Range(
-        min: 30,
-        max: 400,
-        notInRangeMessage: 'La durée doit être entre {{ min }} et {{ max }} minutes',
-    )]
-    #[Groups(['movie:read', 'movie:write'])]
+    #[Groups(['movie:read', 'movie:write', 'review:read'])]
     private ?int $duration = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
@@ -68,7 +78,8 @@ class Movie
      * @var Collection<int, Category>
      */
     #[ORM\ManyToMany(targetEntity: Category::class, mappedBy: 'movies')]
-    #[Groups(['movie:read'])]
+    #[Groups(['movie:read', 'movie:write'])]
+    #[MaxDepth(1)]
     private Collection $categories;
 
     /**
@@ -76,7 +87,16 @@ class Movie
      */
     #[ORM\ManyToMany(targetEntity: Actor::class, mappedBy: 'movies')]
     #[Groups(['movie:read'])]
+    #[MaxDepth(1)]
     private Collection $actors;
+
+    /**
+     * @var Collection<int, Review>
+     */
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'movie', orphanRemoval: true)]
+    #[Groups(['movie:read'])]
+    #[MaxDepth(1)]
+    private Collection $reviews;
 
     #[ORM\Column(nullable: true)]
     #[Groups(['movie:read', 'movie:write'])]
@@ -84,13 +104,14 @@ class Movie
 
     #[ORM\ManyToOne(inversedBy: 'movies')]
     #[Groups(['movie:read'])]
+    #[MaxDepth(1)]
     private ?Director $director = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['movie:read', 'movie:write'])]
     private ?string $url = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     #[Groups(['movie:read', 'movie:write'])]
     private ?float $budget = null;
 
@@ -98,6 +119,7 @@ class Movie
     {
         $this->categories = new ArrayCollection();
         $this->actors = new ArrayCollection();
+        $this->reviews = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -174,7 +196,17 @@ class Movie
     #[ORM\PrePersist]
     public function setCreatedAt(): void
     {
-        $this->createdAt = new DateTimeImmutable();
+        if ($this->createdAt === null) {
+            $this->createdAt = new DateTimeImmutable();
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function ensureCreatedAtNotNull(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new DateTimeImmutable();
+        }
     }
 
     /**
@@ -277,5 +309,47 @@ class Movie
         $this->budget = $budget;
 
         return $this;
+    }
+    /**
+     * @return Collection<int, Review>
+     */
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): static
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews->add($review);
+            $review->setMovie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReview(Review $review): static
+    {
+        if ($this->reviews->removeElement($review)) {
+            if ($review->getMovie() === $this) {
+                $review->setMovie(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getAverageRating(): ?float
+    {
+        if ($this->reviews->isEmpty()) {
+            return null;
+        }
+
+        $total = 0;
+        foreach ($this->reviews as $review) {
+            $total += $review->getRating();
+        }
+
+        return round($total / $this->reviews->count(), 2);
     }
 }

@@ -6,6 +6,8 @@ use App\Entity\User;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use OTPHP\TOTP;
+use RuntimeException;
+
 
 class TwoFactorService
 {
@@ -18,6 +20,7 @@ class TwoFactorService
 
     /**
      * Generate a new TOTP secret for a user
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function generateSecret(): string
     {
@@ -27,12 +30,13 @@ class TwoFactorService
 
     /**
      * Get TOTP instance for a user
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     private function getTOTP(User $user): TOTP
     {
         $secret = $user->getTwoFactorSecret();
         if ($secret === null) {
-            throw new \RuntimeException('User does not have a 2FA secret');
+            throw new RuntimeException('User does not have a 2FA secret');  // ← CHANGÉ
         }
 
         $totp = TOTP::createFromSecret($secret);
@@ -65,6 +69,7 @@ class TwoFactorService
     }
     /**
      * Verify TOTP code with time window tolerance
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function verifyCode(User $user, string $code): bool
     {
@@ -131,7 +136,7 @@ class TwoFactorService
             return;
         }
 
-        $filtered = array_filter($backupCodes, fn($bc) => $bc !== $hashedCode);
+        $filtered = array_filter($backupCodes, fn($backupCode) => $backupCode !== $hashedCode);  // ← CHANGÉ
         $user->setTwoFactorBackupCodes(array_values($filtered));
     }
 }

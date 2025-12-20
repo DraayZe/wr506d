@@ -6,6 +6,11 @@ use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use DateTimeImmutable;
 use Symfony\Component\Serializer\Annotation\Context;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
@@ -19,11 +24,20 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ActorRepository::class)]
-#[ApiFilter(SearchFilter::class, properties: ['lastname' => 'start', 'firstname' => 'start'])]
+#[ApiFilter(SearchFilter::class, properties: ['lastname' => 'start', 'firstname' => 'start', 'movies' => 'exact'])]
 #[ApiFilter(DateFilter::class, properties: ['dob'])]
 #[ApiResource(
     normalizationContext: ['groups' => ['actor:read']],
-    denormalizationContext: ['groups' => ['actor:write']]
+    denormalizationContext: ['groups' => ['actor:write']],
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Post(),
+        new Put(),
+        new Delete(
+            normalizationContext: ['groups' => ['actor:delete']]
+        )
+    ]
 )]
 
 #[ORM\HasLifecycleCallbacks]
@@ -35,7 +49,7 @@ class Actor
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['actor:read', 'movie:read'])]
+    #[Groups(['actor:read', 'movie:read', 'actor:delete'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -64,7 +78,7 @@ class Actor
      * @var Collection<int, Movie>
      */
     #[ORM\ManyToMany(targetEntity: Movie::class, inversedBy: 'actors')]
-    #[Groups(['actor:read'])]
+    #[Groups(['actor:read', 'actor:write'])]
     private Collection $movies;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
@@ -180,7 +194,17 @@ class Actor
     #[ORM\PrePersist]
     public function setCreatedAt(): void
     {
-        $this->createdAt = new \DateTimeImmutable();
+        if ($this->createdAt === null) {
+            $this->createdAt = new DateTimeImmutable();
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function ensureCreatedAtNotNull(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new DateTimeImmutable();
+        }
     }
 
     /**
