@@ -6,7 +6,14 @@ use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use DateTime;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use DateTimeImmutable;
+use Symfony\Component\Serializer\Annotation\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 use App\Repository\ActorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -17,11 +24,20 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ActorRepository::class)]
-#[ApiFilter(SearchFilter::class, properties: ['lastname' => 'start', 'firstname' => 'start'])]
+#[ApiFilter(SearchFilter::class, properties: ['lastname' => 'start', 'firstname' => 'start', 'movies' => 'exact'])]
 #[ApiFilter(DateFilter::class, properties: ['dob'])]
 #[ApiResource(
     normalizationContext: ['groups' => ['actor:read']],
-    denormalizationContext: ['groups' => ['actor:write']]
+    denormalizationContext: ['groups' => ['actor:write']],
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Post(),
+        new Put(),
+        new Delete(
+            normalizationContext: ['groups' => ['actor:delete']]
+        )
+    ]
 )]
 
 #[ORM\HasLifecycleCallbacks]
@@ -33,7 +49,7 @@ class Actor
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['actor:read', 'movie:read'])]
+    #[Groups(['actor:read', 'movie:read', 'actor:delete'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -44,13 +60,15 @@ class Actor
     #[Groups(['actor:read', 'actor:write', 'movie:read'])]
     private ?string $firstname = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Groups(['actor:read', 'actor:write', 'movie:read'])]
-    private ?\DateTime $dob = null;
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
+    private ?\DateTimeImmutable $dob = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Groups(['actor:read', 'actor:write', 'movie:read'])]
-    private ?\DateTime $dod = null;
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
+    private ?\DateTimeImmutable $dod = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Groups(['actor:read', 'actor:write', 'movie:read'])]
@@ -60,12 +78,12 @@ class Actor
      * @var Collection<int, Movie>
      */
     #[ORM\ManyToMany(targetEntity: Movie::class, inversedBy: 'actors')]
-    #[Groups(['actor:read'])]
+    #[Groups(['actor:read', 'actor:write'])]
     private Collection $movies;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     #[Groups(['actor:read'])]
-    private ?\DateTime $createdAt = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'actors')]
     #[Groups(['actor:read', 'movie:read'])]
@@ -109,27 +127,26 @@ class Actor
         return $this;
     }
 
-    public function getDob(): ?\DateTime
+    public function getDob(): ?\DateTimeImmutable
     {
         return $this->dob;
     }
 
-    public function setDob(?\DateTime $dob): static
+
+    public function setDob(?\DateTimeImmutable $dob): static
     {
         $this->dob = $dob;
-
         return $this;
     }
 
-    public function getDod(): ?\DateTime
+    public function getDod(): ?\DateTimeImmutable
     {
         return $this->dod;
     }
 
-    public function setDod(?\DateTime $dod): static
+    public function setDod(?\DateTimeImmutable $dod): static
     {
         $this->dod = $dod;
-
         return $this;
     }
 
@@ -169,7 +186,7 @@ class Actor
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
@@ -177,7 +194,17 @@ class Actor
     #[ORM\PrePersist]
     public function setCreatedAt(): void
     {
-        $this->createdAt = new DateTime();
+        if ($this->createdAt === null) {
+            $this->createdAt = new DateTimeImmutable();
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function ensureCreatedAtNotNull(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new DateTimeImmutable();
+        }
     }
 
     /**
