@@ -22,6 +22,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use DateTime;
 
 #[ORM\Entity(repositoryClass: ActorRepository::class)]
 #[ApiFilter(SearchFilter::class, properties: ['lastname' => 'start', 'firstname' => 'start', 'movies' => 'exact'])]
@@ -109,7 +110,7 @@ class Actor
             return null;
         }
         // Si décédé, calcule l'âge au moment du décès
-        $reference = $this->dod ?? new \DateTime();
+        $reference = $this->dod ?? new DateTime();
 
         return $this->dob->diff($reference)->y;
     }
@@ -239,5 +240,4 @@ class Actor
 
         return $this;
     }
-
 }

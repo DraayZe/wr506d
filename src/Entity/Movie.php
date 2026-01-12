@@ -23,7 +23,17 @@ use ApiPlatform\Metadata\Put;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 #[ApiResource(
-    normalizationContext: ['groups' => ['movie:read', 'actor:list', 'category:list', 'director:list', 'review:list', 'media_object:read'], 'enable_max_depth' => true],
+    normalizationContext: [
+        'groups' => [
+            'movie:read',
+            'actor:list',
+            'category:list',
+            'director:list',
+            'review:list',
+            'media_object:read'
+        ],
+        'enable_max_depth' => true
+    ],
     denormalizationContext: ['groups' => ['movie:write']],
     operations: [
         new GetCollection(),
