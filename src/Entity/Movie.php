@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use DateTimeImmutable;
 use ApiPlatform\Metadata\Delete;
@@ -19,11 +20,10 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 #[ApiResource(
-    normalizationContext: ['groups' => ['movie:read'], 'enable_max_depth' => true],
+    normalizationContext: ['groups' => ['movie:read', 'actor:list', 'category:list', 'director:list', 'review:list', 'media_object:read'], 'enable_max_depth' => true],
     denormalizationContext: ['groups' => ['movie:write']],
     operations: [
         new GetCollection(),
@@ -46,12 +46,12 @@ class Movie
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['movie:read', 'movie:delete'])]
+    #[Groups(['movie:read', 'movie:list', 'movie:delete'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
-    #[Groups(['movie:read', 'movie:write','review:read','movie:delete'])]
+    #[Groups(['movie:read', 'movie:list', 'movie:write', 'review:read'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -59,15 +59,15 @@ class Movie
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['movie:read', 'movie:write', 'review:read'])]
+    #[Groups(['movie:read', 'movie:list', 'movie:write', 'review:read'])]
     private ?int $duration = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    #[Groups(['movie:read', 'movie:write'])]
+    #[Groups(['movie:read', 'movie:list', 'movie:write'])]
     private ?\DateTime $releaseData = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['movie:read', 'movie:write'])]
+    #[Groups(['movie:read', 'movie:list', 'movie:write'])]
     private ?string $image = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]

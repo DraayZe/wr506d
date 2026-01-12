@@ -27,7 +27,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiFilter(SearchFilter::class, properties: ['lastname' => 'start', 'firstname' => 'start', 'movies' => 'exact'])]
 #[ApiFilter(DateFilter::class, properties: ['dob'])]
 #[ApiResource(
-    normalizationContext: ['groups' => ['actor:read']],
+    normalizationContext: ['groups' => ['actor:read', 'movie:list', 'media_object:read']],
     denormalizationContext: ['groups' => ['actor:write']],
     operations: [
         new GetCollection(),
@@ -49,29 +49,29 @@ class Actor
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['actor:read', 'movie:read', 'actor:delete'])]
+    #[Groups(['actor:read', 'actor:list', 'actor:delete'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['actor:read', 'actor:write', 'movie:read'])]
+    #[Groups(['actor:read', 'actor:list', 'actor:write'])]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['actor:read', 'actor:write', 'movie:read'])]
+    #[Groups(['actor:read', 'actor:list', 'actor:write'])]
     private ?string $firstname = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
-    #[Groups(['actor:read', 'actor:write', 'movie:read'])]
+    #[Groups(['actor:read', 'actor:write'])]
     #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     private ?\DateTimeImmutable $dob = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
-    #[Groups(['actor:read', 'actor:write', 'movie:read'])]
+    #[Groups(['actor:read', 'actor:write'])]
     #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     private ?\DateTimeImmutable $dod = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['actor:read', 'actor:write', 'movie:read'])]
+    #[Groups(['actor:read', 'actor:write'])]
     private ?string $bio = null;
 
     /**
@@ -86,12 +86,33 @@ class Actor
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'actors')]
-    #[Groups(['actor:read', 'movie:read'])]
+    #[Groups(['actor:read', 'actor:list'])]
     private ?MediaObject $photo = null;
 
     /**
-     * @var Collection<int, MediaObject>
+     * Nom complet (virtuel)
      */
+    #[Groups(['actor:list', 'actor:read'])]
+    public function getFullName(): string
+    {
+        return trim($this->lastname . ' ' . $this->firstname);
+    }
+
+
+    /**
+     * Âge calculé (virtuel)
+     */
+    #[Groups(['actor:list', 'actor:read'])]
+    public function getAge(): ?int
+    {
+        if ($this->dob === null) {
+            return null;
+        }
+        // Si décédé, calcule l'âge au moment du décès
+        $reference = $this->dod ?? new \DateTime();
+
+        return $this->dob->diff($reference)->y;
+    }
 
     public function __construct()
     {
@@ -207,10 +228,6 @@ class Actor
         }
     }
 
-    /**
-     * @return Collection<int, MediaObject>
-     */
-
     public function getPhoto(): ?MediaObject
     {
         return $this->photo;
@@ -222,4 +239,5 @@ class Actor
 
         return $this;
     }
+
 }
