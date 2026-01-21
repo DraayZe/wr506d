@@ -71,7 +71,7 @@ class Actor
     #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     private ?\DateTimeImmutable $dod = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['actor:read', 'actor:write'])]
     private ?string $bio = null;
 
@@ -177,7 +177,7 @@ class Actor
         return $this->bio;
     }
 
-    public function setBio(string $bio): static
+    public function setBio(?string $bio): static
     {
         $this->bio = $bio;
 
