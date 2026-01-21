@@ -1,0 +1,12 @@
+framework:
+    rate_limiter:
+        anonymous_api:
+            # use 'sliding_window' if you prefer that policy
+            policy: 'fixed_window'
+            limit: 50
+            interval: '1 minute'
+        authenticated_api:
+            policy: 'token_bucket'
+            limit: 500
+            rate: { interval: '2
+             minutes', amount: 500 }

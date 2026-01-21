@@ -1,0 +1,25 @@
+api_platform:
+    title: Hello API Platform
+    version: 1.0.0
+    defaults:
+        stateless: true
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']
+    graphql:
+        enabled: true
+    formats:
+        jsonld: [ 'application/ld+json' ]
+        multipart: [ 'multipart/form-data' ]
+
+    # Configuration pour Swagger UI
+    swagger:
+        api_keys:
+            JWT:
+                name: Authorization
+                type: header
+
+    # Configuration OpenAPI pour la persistance du token
+    openapi:
+        swagger_ui_extra_configuration:
+            persistAuthorization: true
+
