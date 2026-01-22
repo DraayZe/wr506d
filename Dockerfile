@@ -15,6 +15,7 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
     && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
     && echo '<Directory /var/www/html/public>\n\
+    Options Indexes FollowSymLinks\n\
     AllowOverride All\n\
     Require all granted\n\
     FallbackResource /index.php\n\
@@ -54,7 +55,7 @@ USER www-data
 
 RUN composer dump-autoload --optimize --no-dev \
     && php bin/console cache:clear --env=prod \
-    && php bin/console assets:install public
+    && php bin/console assets:install public --copy
 
 # Switch back to root to start Apache
 USER root
