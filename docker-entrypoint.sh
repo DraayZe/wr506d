@@ -1,20 +1,27 @@
 #!/bin/bash
 set -e
 
-# Generate JWT keys if they don't exist
+# 1. Génération des clés JWT avec la commande Symfony (plus fiable qu'openssl pur)
 if [ ! -f config/jwt/private.pem ]; then
     echo "Generating JWT keys..."
     mkdir -p config/jwt
-    openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass:${JWT_PASSPHRASE}
-    openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:${JWT_PASSPHRASE}
+    # Utilise les variables d'env JWT_PASSPHRASE déjà présentes
+    php bin/console lexik:jwt:generate-keypair --skip-if-exists
     chown -R www-data:www-data config/jwt
-    chmod 644 config/jwt/private.pem config/jwt/public.pem
+    chmod 600 config/jwt/private.pem
+    chmod 644 config/jwt/public.pem
     echo "JWT keys generated."
 fi
 
-# Clear cache
-php bin/console cache:clear --env=prod --no-warmup
-php bin/console cache:warmup --env=prod
+# 2. FIX CRUCIAL : Forcer les permissions sur le dossier var
+# Cela règle l'erreur "Permission denied" sur le cache system et app
+mkdir -p var/cache var/log var/sessions
+chown -R www-data:www-data var
+chmod -R 777 var
 
-# Start Apache
+# 3. Gestion du cache en tant qu'utilisateur www-data
+# On évite que root ne recrée des fichiers protégés
+sudo -u www-data php bin/console cache:clear --env=prod
+
+# 4. Lancement d'Apache
 exec apache2-foreground
