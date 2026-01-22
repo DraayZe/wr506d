@@ -18,6 +18,10 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
     Options Indexes FollowSymLinks\n\
     AllowOverride All\n\
     Require all granted\n\
+    SetEnvIfAuthorization On \n\
+    RewriteEngine On \n\
+    RewriteCond %{HTTP:Authorization} . \n\
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}] \n\
     FallbackResource /index.php\n\
 </Directory>' > /etc/apache2/conf-available/symfony.conf \
     && a2enconf symfony
