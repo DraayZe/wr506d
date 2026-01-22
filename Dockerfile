@@ -7,8 +7,8 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo_mysql zip intl opcache gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Enable Apache modules
+RUN a2enmod rewrite headers
 
 # Configure Apache
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
@@ -18,14 +18,10 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
     Options Indexes FollowSymLinks\n\
     AllowOverride All\n\
     Require all granted\n\
-    # --- FIX JWT FOR APACHE --- \n\
-    SetEnvIfAuthorization On\n\
-    RewriteEngine On\n\
-    RewriteCond %{HTTP:Authorization} ^(.*)\n\
-    RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]\n\
-    # -------------------------- \n\
     FallbackResource /index.php\n\
-</Directory>' > /etc/apache2/conf-available/symfony.conf \
+</Directory>\n\
+\n\
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1' > /etc/apache2/conf-available/symfony.conf \
     && a2enconf symfony
 
 # Configure PHP
