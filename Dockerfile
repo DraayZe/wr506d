@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache modules
-RUN a2enmod rewrite headers
+RUN a2enmod rewrite headers env
 
 # Configure Apache
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
@@ -18,10 +18,9 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
     Options Indexes FollowSymLinks\n\
     AllowOverride All\n\
     Require all granted\n\
+    CGIPassAuth On\n\
     FallbackResource /index.php\n\
-</Directory>\n\
-\n\
-SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1' > /etc/apache2/conf-available/symfony.conf \
+</Directory>' > /etc/apache2/conf-available/symfony.conf \
     && a2enconf symfony
 
 # Configure PHP
