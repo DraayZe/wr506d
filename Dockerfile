@@ -63,6 +63,12 @@ RUN composer dump-autoload --optimize --no-dev \
 # Switch back to root to start Apache
 USER root
 
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost/api/docs || exit 1
+
+ENTRYPOINT ["docker-entrypoint.sh"]
