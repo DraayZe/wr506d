@@ -55,7 +55,7 @@ USER www-data
 
 RUN composer dump-autoload --optimize --no-dev \
     && php bin/console cache:clear --env=prod \
-    && php bin/console assets:install public --copy
+    && php bin/console assets:install public
 
 # Switch back to root to start Apache
 USER root
