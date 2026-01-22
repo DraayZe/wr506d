@@ -43,13 +43,21 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 # Copy application
 COPY . .
 
-# Finalize installation
+# Fix permissions BEFORE running scripts
+# On s'assure que www-data est propriétaire avant de générer quoi que ce soit
+RUN mkdir -p var/cache var/log var/sessions public/media \
+    && chown -R www-data:www-data /var/www/html
+
+# Switch to the web user to run final installation steps
+# Cela garantit que le cache généré appartient au bon utilisateur
+USER www-data
+
 RUN composer dump-autoload --optimize --no-dev \
     && php bin/console cache:clear --env=prod \
-    && php bin/console assets:install public \
-    && mkdir -p var/cache var/log public/media \
-    && chown -R www-data:www-data var public/media \
-    && chmod -R 755 var public/media
+    && php bin/console assets:install public
+
+# Switch back to root to start Apache
+USER root
 
 EXPOSE 80
 
