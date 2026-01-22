@@ -22,13 +22,14 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
     normalizationContext: ['groups' => ['director:read']],
     denormalizationContext: ['groups' => ['director:write']],
     operations: [
-    new GetCollection(),
-    new Get(),
-    new Post(),
-    new Put(),
-    new Delete(
-        normalizationContext: ['groups' => ['director:delete']]
-    )
+        new GetCollection(),
+        new Get(),
+        new Post(security: "is_granted('ROLE_ADMIN')"),
+        new Put(security: "is_granted('ROLE_ADMIN')"),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN')",
+            normalizationContext: ['groups' => ['director:delete']]
+        )
     ]
 )]
 /**
