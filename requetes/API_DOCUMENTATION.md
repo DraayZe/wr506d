@@ -1,30 +1,45 @@
-# API Movies - Documentation des Requetes
+# API Movies – Documentation des requêtes
 
-API REST et GraphQL pour la gestion de films, acteurs, realisateurs et critiques.
+API REST et GraphQL pour la gestion des **films**, **acteurs**, **réalisateurs**, **catégories** et **critiques**.
+
+---
 
 ## Base URL
 
+```text
+{{URLPROD}} = https://wr506d.lennyfernet.fr/
 ```
-http://localhost:8319/api
-```
+
+Toutes les routes ci-dessous sont préfixées par cette URL.
+
+---
 
 ## Authentification
 
-L'API utilise **JWT (JSON Web Tokens)** pour l'authentification.
+L’API utilise **JWT (JSON Web Token)**.
+
+* **Les requêtes GET sont publiques** (pas besoin de token)
+* **Les requêtes POST / PUT / PATCH / DELETE nécessitent** :
+
+    * un token JWT valide
+    * le **rôle `ROLE_ADMIN`**
 
 ### Obtenir un token
 
-```bash
+```http
 POST /auth
 Content-Type: application/json
+```
 
+```json
 {
   "email": "user@example.com",
   "password": "password"
 }
 ```
 
-**Reponse :**
+**Réponse :**
+
 ```json
 {
   "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
@@ -33,38 +48,45 @@ Content-Type: application/json
 
 ### Utiliser le token
 
-Ajouter le header `Authorization` a chaque requete authentifiee :
-```
+Ajouter le header suivant à chaque requête protégée :
+
+```http
 Authorization: Bearer <token>
 ```
 
 ---
 
-# REST API
+## REST API
 
-## Movies
+### Movies
 
-### Liste des films
+#### Liste des films
+
 ```http
 GET /api/movies
 ```
 
 **Filtres disponibles :**
+
 ```http
 GET /api/movies?name=Avatar
 GET /api/movies?duration[gte]=100&duration[lte]=200
 ```
 
-### Detail d'un film
+#### Détail d’un film
+
 ```http
 GET /api/movies/{id}
 ```
 
-### Creer un film
+#### Créer un film *(ROLE_ADMIN requis)*
+
 ```http
 POST /api/movies
 Content-Type: application/ld+json
+```
 
+```json
 {
   "name": "Inception",
   "description": "Un film de Christopher Nolan",
@@ -77,93 +99,112 @@ Content-Type: application/ld+json
 }
 ```
 
-### Modifier un film
+#### Modifier un film *(ROLE_ADMIN requis)*
+
 ```http
 PUT /api/movies/{id}
 Content-Type: application/ld+json
+```
 
+```json
 {
   "name": "Inception (Updated)",
-  "description": "Description mise a jour",
+  "description": "Description mise à jour",
   "duration": 150
 }
 ```
 
-### Supprimer un film
+#### Supprimer un film *(ROLE_ADMIN requis)*
+
 ```http
 DELETE /api/movies/{id}
 ```
 
 ---
 
-## Actors
+### Actors
 
-### Liste des acteurs
+#### Liste des acteurs
+
 ```http
 GET /api/actors
 ```
 
 **Filtres disponibles :**
+
 ```http
 GET /api/actors?lastname=DiCaprio
 GET /api/actors?firstname=Leonardo
 GET /api/actors?dob[after]=1970-01-01
 ```
 
-### Detail d'un acteur
+#### Détail d’un acteur
+
 ```http
 GET /api/actors/{id}
 ```
 
-### Creer un acteur
+#### Créer un acteur *(ROLE_ADMIN requis)*
+
 ```http
 POST /api/actors
 Content-Type: application/ld+json
+```
 
+```json
 {
   "lastname": "DiCaprio",
   "firstname": "Leonardo",
-  "bio": "Acteur americain ne en 1974",
+  "bio": "Acteur américain né en 1974",
   "dob": "1974-11-11"
 }
 ```
 
-### Modifier un acteur
+#### Modifier un acteur *(ROLE_ADMIN requis)*
+
 ```http
 PUT /api/actors/{id}
 Content-Type: application/ld+json
+```
 
+```json
 {
   "lastname": "DiCaprio",
   "firstname": "Leonardo",
-  "bio": "Bio mise a jour"
+  "bio": "Bio mise à jour"
 }
 ```
 
-### Supprimer un acteur
+#### Supprimer un acteur *(ROLE_ADMIN requis)*
+
 ```http
 DELETE /api/actors/{id}
 ```
 
 ---
 
-## Directors
+### Directors
 
-### Liste des realisateurs
+#### Liste des réalisateurs
+
 ```http
 GET /api/directors
 ```
 
-### Detail d'un realisateur
+#### Détail d’un réalisateur
+
 ```http
 GET /api/directors/{id}
 ```
 
-### Creer un realisateur
+#### Créer un réalisateur *(ROLE_ADMIN requis)*
+
 ```http
 POST /api/directors
 Content-Type: application/ld+json
+```
 
+```json
 {
   "lastname": "Nolan",
   "firstname": "Christopher",
@@ -171,86 +212,105 @@ Content-Type: application/ld+json
 }
 ```
 
-### Modifier un realisateur
+#### Modifier un réalisateur *(ROLE_ADMIN requis)*
+
 ```http
 PUT /api/directors/{id}
 Content-Type: application/ld+json
+```
 
+```json
 {
   "lastname": "Nolan",
   "firstname": "Christopher"
 }
 ```
 
-### Supprimer un realisateur
+#### Supprimer un réalisateur *(ROLE_ADMIN requis)*
+
 ```http
 DELETE /api/directors/{id}
 ```
 
 ---
 
-## Categories
+### Categories
 
-### Liste des categories
+#### Liste des catégories
+
 ```http
 GET /api/categories
 ```
 
-### Detail d'une categorie
+#### Détail d’une catégorie
+
 ```http
 GET /api/categories/{id}
 ```
 
-### Creer une categorie
+#### Créer une catégorie *(ROLE_ADMIN requis)*
+
 ```http
 POST /api/categories
 Content-Type: application/ld+json
+```
 
+```json
 {
   "name": "Science-Fiction"
 }
 ```
 
-### Modifier une categorie
+#### Modifier une catégorie *(ROLE_ADMIN requis)*
+
 ```http
 PUT /api/categories/{id}
 Content-Type: application/ld+json
+```
 
+```json
 {
   "name": "Sci-Fi"
 }
 ```
 
-### Supprimer une categorie
+#### Supprimer une catégorie *(ROLE_ADMIN requis)*
+
 ```http
 DELETE /api/categories/{id}
 ```
 
 ---
 
-## Reviews (Authentification requise)
+### Reviews
 
-### Liste des critiques
+#### Liste des critiques
+
 ```http
 GET /api/reviews
 ```
 
 **Filtres disponibles :**
+
 ```http
 GET /api/reviews?movie=1
 ```
 
-### Detail d'une critique
+#### Détail d’une critique
+
 ```http
 GET /api/reviews/{id}
 ```
 
-### Creer une critique
+#### Créer une critique *(ROLE_ADMIN requis)*
+
 ```http
 POST /api/reviews
-Authorization: Bearer <token>
 Content-Type: application/ld+json
+Authorization: Bearer <token>
+```
 
+```json
 {
   "comment": "Excellent film !",
   "rating": 5,
@@ -258,19 +318,23 @@ Content-Type: application/ld+json
 }
 ```
 
-### Modifier sa critique
+#### Modifier une critique *(ROLE_ADMIN requis)*
+
 ```http
 PATCH /api/reviews/{id}
-Authorization: Bearer <token>
 Content-Type: application/merge-patch+json
+Authorization: Bearer <token>
+```
 
+```json
 {
-  "comment": "Commentaire modifie",
+  "comment": "Commentaire modifié",
   "rating": 4
 }
 ```
 
-### Supprimer sa critique
+#### Supprimer une critique *(ROLE_ADMIN requis)*
+
 ```http
 DELETE /api/reviews/{id}
 Authorization: Bearer <token>
@@ -278,20 +342,24 @@ Authorization: Bearer <token>
 
 ---
 
-## Users
+### Users
 
-### Inscription
+#### Inscription
+
 ```http
 POST /api/users
 Content-Type: application/ld+json
+```
 
+```json
 {
   "email": "newuser@example.com",
   "plainPassword": "SecurePassword123"
 }
 ```
 
-### Informations utilisateur courant
+#### Informations de l’utilisateur courant
+
 ```http
 GET /api/me
 Authorization: Bearer <token>
@@ -299,56 +367,41 @@ Authorization: Bearer <token>
 
 ---
 
-## Media Objects
+### Media Objects
 
-### Liste des medias
+#### Liste des médias
+
 ```http
 GET /api/media_objects
 ```
 
-### Detail d'un media
+#### Détail d’un média
+
 ```http
 GET /api/media_objects/{id}
 ```
 
-### Upload un media
+#### Upload d’un média *(ROLE_ADMIN requis)*
+
 ```http
 POST /api/media_objects
 Content-Type: multipart/form-data
-
-file: <binary>
 ```
 
 ---
 
-## 2FA (Two-Factor Authentication)
+## GraphQL API
 
-### Configurer la 2FA
+### Endpoint
+
 ```http
-POST /api/2fa/setup
-Authorization: Bearer <token>
+POST /api/graphql
 ```
 
-### Activer la 2FA
-```http
-POST /api/2fa/enable
-Authorization: Bearer <token>
-Content-Type: application/json
+### Exemples de requêtes
 
-{
-  "code": "123456"
-}
-```
+#### Liste des films
 
----
-
-# GraphQL API
-
-**Endpoint :** `POST /api/graphql`
-
-## Queries
-
-### Liste des films
 ```graphql
 query {
   movies {
@@ -364,16 +417,12 @@ query {
         }
         categories {
           edges {
-            node {
-              name
-            }
+            node { name }
           }
         }
         actors {
           edges {
-            node {
-              fullName
-            }
+            node { fullName }
           }
         }
       }
@@ -382,7 +431,8 @@ query {
 }
 ```
 
-### Film par ID
+#### Film par ID
+
 ```graphql
 query {
   movie(id: "/api/movies/1") {
@@ -394,328 +444,8 @@ query {
     budget
     reviews {
       edges {
-        node {
-          comment
-          rating
-        }
+        node { comment rating }
       }
-    }
-  }
-}
-```
-
-### Liste des acteurs
-```graphql
-query {
-  actors {
-    edges {
-      node {
-        id
-        lastname
-        firstname
-        fullName
-        age
-        bio
-        movies {
-          edges {
-            node {
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-### Acteur par ID
-```graphql
-query {
-  actor(id: "/api/actors/1") {
-    id
-    lastname
-    firstname
-    fullName
-    age
-    dob
-    bio
-  }
-}
-```
-
-### Liste des realisateurs
-```graphql
-query {
-  directors {
-    edges {
-      node {
-        id
-        lastname
-        firstname
-        movies {
-          edges {
-            node {
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-### Liste des categories
-```graphql
-query {
-  categories {
-    edges {
-      node {
-        id
-        name
-        movies {
-          edges {
-            node {
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-### Liste des critiques
-```graphql
-query {
-  reviews {
-    edges {
-      node {
-        id
-        comment
-        rating
-        movie {
-          name
-        }
-        user {
-          email
-        }
-        createdAt
-      }
-    }
-  }
-}
-```
-
-### Filtrage et pagination
-```graphql
-query {
-  movies(first: 10, after: "cursor", name: "Avatar") {
-    edges {
-      node {
-        id
-        name
-      }
-      cursor
-    }
-    pageInfo {
-      hasNextPage
-      endCursor
-    }
-    totalCount
-  }
-}
-```
-
----
-
-## Mutations
-
-### Creer un film
-```graphql
-mutation {
-  createMovie(input: {
-    name: "Inception"
-    description: "Un film de Christopher Nolan"
-    duration: 148
-    director: "/api/directors/1"
-    categories: ["/api/categories/1"]
-    actors: ["/api/actors/1"]
-  }) {
-    movie {
-      id
-      name
-    }
-  }
-}
-```
-
-### Modifier un film
-```graphql
-mutation {
-  updateMovie(input: {
-    id: "/api/movies/1"
-    name: "Inception (Updated)"
-    description: "Description mise a jour"
-  }) {
-    movie {
-      id
-      name
-      description
-    }
-  }
-}
-```
-
-### Supprimer un film
-```graphql
-mutation {
-  deleteMovie(input: {
-    id: "/api/movies/1"
-  }) {
-    movie {
-      id
-    }
-  }
-}
-```
-
-### Creer un acteur
-```graphql
-mutation {
-  createActor(input: {
-    lastname: "DiCaprio"
-    firstname: "Leonardo"
-    bio: "Acteur americain"
-    dob: "1974-11-11"
-  }) {
-    actor {
-      id
-      fullName
-    }
-  }
-}
-```
-
-### Modifier un acteur
-```graphql
-mutation {
-  updateActor(input: {
-    id: "/api/actors/1"
-    bio: "Bio mise a jour"
-  }) {
-    actor {
-      id
-      fullName
-      bio
-    }
-  }
-}
-```
-
-### Supprimer un acteur
-```graphql
-mutation {
-  deleteActor(input: {
-    id: "/api/actors/1"
-  }) {
-    actor {
-      id
-    }
-  }
-}
-```
-
-### Creer un realisateur
-```graphql
-mutation {
-  createDirector(input: {
-    lastname: "Nolan"
-    firstname: "Christopher"
-    dob: "1970-07-30"
-  }) {
-    director {
-      id
-      lastname
-      firstname
-    }
-  }
-}
-```
-
-### Creer une categorie
-```graphql
-mutation {
-  createCategory(input: {
-    name: "Science-Fiction"
-  }) {
-    category {
-      id
-      name
-    }
-  }
-}
-```
-
-### Creer une critique (authentifie)
-```graphql
-mutation {
-  createReview(input: {
-    comment: "Excellent film !"
-    rating: 5
-    movie: "/api/movies/1"
-  }) {
-    review {
-      id
-      comment
-      rating
-    }
-  }
-}
-```
-
-### Modifier sa critique (authentifie)
-```graphql
-mutation {
-  updateReview(input: {
-    id: "/api/reviews/1"
-    comment: "Commentaire modifie"
-    rating: 4
-  }) {
-    review {
-      id
-      comment
-      rating
-    }
-  }
-}
-```
-
-### Supprimer sa critique (authentifie)
-```graphql
-mutation {
-  deleteReview(input: {
-    id: "/api/reviews/1"
-  }) {
-    review {
-      id
-    }
-  }
-}
-```
-
-### Inscription utilisateur
-```graphql
-mutation {
-  createUser(input: {
-    email: "newuser@example.com"
-    plainPassword: "SecurePassword123"
-  }) {
-    user {
-      id
-      email
     }
   }
 }
@@ -725,21 +455,21 @@ mutation {
 
 ## Documentation interactive
 
-- **Swagger UI (REST):** http://localhost:8319/api/docs
-- **GraphQL Playground:** http://localhost:8319/api/graphql
+* **Swagger UI (REST)** : `/api/docs`
+* **GraphQL Playground** : `/api/graphql`
 
 ---
 
-## Codes de reponse HTTP
+## Codes de réponse HTTP
 
-| Code | Description |
-|------|-------------|
-| 200 | Succes (GET, PUT, PATCH) |
-| 201 | Ressource creee (POST) |
-| 204 | Suppression reussie (DELETE) |
-| 400 | Requete invalide |
-| 401 | Non authentifie |
-| 403 | Acces refuse |
-| 404 | Ressource non trouvee |
-| 422 | Erreur de validation |
-| 500 | Erreur serveur |
+| Code | Description              |
+| ---- | ------------------------ |
+| 200  | Succès (GET, PUT, PATCH) |
+| 201  | Ressource créée          |
+| 204  | Suppression réussie      |
+| 400  | Requête invalide         |
+| 401  | Non authentifié          |
+| 403  | Accès refusé             |
+| 404  | Ressource non trouvée    |
+| 422  | Erreur de validation     |
+| 500  | Erreur serveur           |
