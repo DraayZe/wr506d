@@ -1,9 +1,3 @@
-# API Movies – Documentation des requêtes
-
-API REST et GraphQL pour la gestion des **films**, **acteurs**, **réalisateurs**, **catégories** et **critiques**.
-
----
-
 ## Base URL
 
 ```text
@@ -398,7 +392,19 @@ Content-Type: multipart/form-data
 POST /api/graphql
 ```
 
-### Exemples de requêtes
+### Authentification GraphQL
+
+Pour les mutations (création, modification, suppression), ajouter le header :
+
+```http
+Authorization: Bearer <token>
+```
+
+---
+
+## Queries (Lecture)
+
+### Movies
 
 #### Liste des films
 
@@ -431,6 +437,44 @@ query {
 }
 ```
 
+#### Liste des films avec pagination
+
+```graphql
+query {
+  movies(first: 10, after: "cursor") {
+    edges {
+      node {
+        id
+        name
+        duration
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    totalCount
+  }
+}
+```
+
+#### Liste des films avec filtre
+
+```graphql
+query {
+  movies(name: "Avatar") {
+    edges {
+      node {
+        id
+        name
+        description
+      }
+    }
+  }
+}
+```
+
 #### Film par ID
 
 ```graphql
@@ -442,10 +486,632 @@ query {
     duration
     releaseData
     budget
+    image
+    url
+    nbEntries
+    createdAt
+    director {
+      id
+      lastname
+      firstname
+    }
+    categories {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+    actors {
+      edges {
+        node {
+          id
+          fullName
+          bio
+        }
+      }
+    }
     reviews {
       edges {
-        node { comment rating }
+        node {
+          id
+          comment
+          rating
+          createdAt
+        }
       }
+    }
+  }
+}
+```
+
+---
+
+### Actors
+
+#### Liste des acteurs
+
+```graphql
+query {
+  actors {
+    edges {
+      node {
+        id
+        lastname
+        firstname
+        fullName
+        age
+        bio
+        dob
+        dod
+        createdAt
+        photo {
+          contentUrl
+        }
+        movies {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+#### Liste des acteurs avec filtre
+
+```graphql
+query {
+  actors(lastname: "DiCaprio") {
+    edges {
+      node {
+        id
+        fullName
+        bio
+      }
+    }
+  }
+}
+```
+
+#### Acteur par ID
+
+```graphql
+query {
+  actor(id: "/api/actors/1") {
+    id
+    lastname
+    firstname
+    fullName
+    age
+    bio
+    dob
+    dod
+    createdAt
+    photo {
+      contentUrl
+    }
+    movies {
+      edges {
+        node {
+          id
+          name
+          duration
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
+### Directors
+
+#### Liste des réalisateurs
+
+```graphql
+query {
+  directors {
+    edges {
+      node {
+        id
+        lastname
+        firstname
+        dob
+        dod
+        movies {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+#### Réalisateur par ID
+
+```graphql
+query {
+  director(id: "/api/directors/1") {
+    id
+    lastname
+    firstname
+    dob
+    dod
+    movies {
+      edges {
+        node {
+          id
+          name
+          duration
+          releaseData
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
+### Categories
+
+#### Liste des catégories
+
+```graphql
+query {
+  categories {
+    edges {
+      node {
+        id
+        name
+        createdAt
+        movies {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+#### Catégorie par ID
+
+```graphql
+query {
+  category(id: "/api/categories/1") {
+    id
+    name
+    createdAt
+    movies {
+      edges {
+        node {
+          id
+          name
+          duration
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
+### Reviews
+
+#### Liste des critiques
+
+```graphql
+query {
+  reviews {
+    edges {
+      node {
+        id
+        comment
+        rating
+        createdAt
+        updatedAt
+        movie {
+          id
+          name
+        }
+        user {
+          id
+          email
+        }
+      }
+    }
+  }
+}
+```
+
+#### Critique par ID
+
+```graphql
+query {
+  review(id: "/api/reviews/1") {
+    id
+    comment
+    rating
+    createdAt
+    updatedAt
+    movie {
+      id
+      name
+      description
+    }
+    user {
+      id
+      email
+    }
+  }
+}
+```
+
+---
+
+### Users
+
+#### Utilisateur par ID
+
+```graphql
+query {
+  user(id: "/api/users/1") {
+    id
+    email
+    reviews {
+      edges {
+        node {
+          id
+          comment
+          rating
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
+### Media Objects
+
+#### Liste des médias
+
+```graphql
+query {
+  mediaObjects {
+    edges {
+      node {
+        id
+        contentUrl
+        filePath
+      }
+    }
+  }
+}
+```
+
+#### Média par ID
+
+```graphql
+query {
+  mediaObject(id: "/api/media_objects/1") {
+    id
+    contentUrl
+    filePath
+  }
+}
+```
+
+---
+
+## Mutations (Écriture) - ROLE_ADMIN requis
+
+### Movies
+
+#### Créer un film
+
+```graphql
+mutation {
+  createMovie(input: {
+    name: "Inception"
+    description: "Un film de Christopher Nolan"
+    duration: 148
+    budget: 160000000
+    director: "/api/directors/1"
+    categories: ["/api/categories/1", "/api/categories/2"]
+  }) {
+    movie {
+      id
+      name
+      description
+      duration
+    }
+  }
+}
+```
+
+#### Modifier un film
+
+```graphql
+mutation {
+  updateMovie(input: {
+    id: "/api/movies/1"
+    name: "Inception (Updated)"
+    description: "Description mise à jour"
+    duration: 150
+  }) {
+    movie {
+      id
+      name
+      description
+      duration
+    }
+  }
+}
+```
+
+#### Supprimer un film
+
+```graphql
+mutation {
+  deleteMovie(input: {
+    id: "/api/movies/1"
+  }) {
+    movie {
+      id
+    }
+  }
+}
+```
+
+---
+
+### Actors
+
+#### Créer un acteur
+
+```graphql
+mutation {
+  createActor(input: {
+    lastname: "DiCaprio"
+    firstname: "Leonardo"
+    bio: "Acteur américain né en 1974"
+    dob: "1974-11-11"
+  }) {
+    actor {
+      id
+      fullName
+      bio
+    }
+  }
+}
+```
+
+#### Modifier un acteur
+
+```graphql
+mutation {
+  updateActor(input: {
+    id: "/api/actors/1"
+    lastname: "DiCaprio"
+    firstname: "Leonardo"
+    bio: "Bio mise à jour"
+  }) {
+    actor {
+      id
+      fullName
+      bio
+    }
+  }
+}
+```
+
+#### Supprimer un acteur
+
+```graphql
+mutation {
+  deleteActor(input: {
+    id: "/api/actors/1"
+  }) {
+    actor {
+      id
+    }
+  }
+}
+```
+
+---
+
+### Directors
+
+#### Créer un réalisateur
+
+```graphql
+mutation {
+  createDirector(input: {
+    lastname: "Nolan"
+    firstname: "Christopher"
+    dob: "1970-07-30"
+  }) {
+    director {
+      id
+      lastname
+      firstname
+    }
+  }
+}
+```
+
+#### Modifier un réalisateur
+
+```graphql
+mutation {
+  updateDirector(input: {
+    id: "/api/directors/1"
+    lastname: "Nolan"
+    firstname: "Christopher"
+  }) {
+    director {
+      id
+      lastname
+      firstname
+    }
+  }
+}
+```
+
+#### Supprimer un réalisateur
+
+```graphql
+mutation {
+  deleteDirector(input: {
+    id: "/api/directors/1"
+  }) {
+    director {
+      id
+    }
+  }
+}
+```
+
+---
+
+### Categories
+
+#### Créer une catégorie
+
+```graphql
+mutation {
+  createCategory(input: {
+    name: "Science-Fiction"
+  }) {
+    category {
+      id
+      name
+    }
+  }
+}
+```
+
+#### Modifier une catégorie
+
+```graphql
+mutation {
+  updateCategory(input: {
+    id: "/api/categories/1"
+    name: "Sci-Fi"
+  }) {
+    category {
+      id
+      name
+    }
+  }
+}
+```
+
+#### Supprimer une catégorie
+
+```graphql
+mutation {
+  deleteCategory(input: {
+    id: "/api/categories/1"
+  }) {
+    category {
+      id
+    }
+  }
+}
+```
+
+---
+
+### Reviews
+
+#### Créer une critique
+
+```graphql
+mutation {
+  createReview(input: {
+    comment: "Excellent film !"
+    rating: 5
+    movie: "/api/movies/1"
+  }) {
+    review {
+      id
+      comment
+      rating
+      createdAt
+    }
+  }
+}
+```
+
+#### Modifier une critique
+
+```graphql
+mutation {
+  updateReview(input: {
+    id: "/api/reviews/1"
+    comment: "Commentaire modifié"
+    rating: 4
+  }) {
+    review {
+      id
+      comment
+      rating
+    }
+  }
+}
+```
+
+#### Supprimer une critique
+
+```graphql
+mutation {
+  deleteReview(input: {
+    id: "/api/reviews/1"
+  }) {
+    review {
+      id
+    }
+  }
+}
+```
+
+---
+
+### Users
+
+#### Créer un utilisateur (inscription)
+
+```graphql
+mutation {
+  createUser(input: {
+    email: "newuser@example.com"
+    plainPassword: "SecurePassword123"
+  }) {
+    user {
+      id
+      email
     }
   }
 }
