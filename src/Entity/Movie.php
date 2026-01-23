@@ -39,7 +39,7 @@ use ApiPlatform\Metadata\Put;
         new GetCollection(),
         new Get(),
         new Post(security: "is_granted('ROLE_ADMIN')"),
-        new Put(security: "is_granted('ROLE_ADMIN')"),
+        new Patch(security: "is_granted('ROLE_ADMIN')"),
         new Delete(
             security: "is_granted('ROLE_ADMIN')",
             normalizationContext: ['groups' => ['movie:delete']]
