@@ -1,5 +1,7 @@
 # API Movies – Documentation
 
+À noter, ce projet est aussi liée au frontend Moview. Vous pouvez retrouver le projet : https://github.com/DraayZe/WR505-frontend-moview
+
 ## Présentation du projet
 
 API REST et GraphQL pour la gestion d'une base de données de films. Ce projet a été développé avec **Symfony 7.3** et **API Platform 4**.
